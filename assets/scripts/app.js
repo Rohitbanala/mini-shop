@@ -15,7 +15,7 @@ class ShopingCart {
   items = [];
   addProduct(product) {
     this.items.push(product);
-    this.totalOutput = `<h2>Total \$${1}</h2>`;
+    this.totalOutput.innerHTML = `<h2>Total \$${2}</h2>`;
   }
 
   render() {
@@ -36,7 +36,7 @@ class ProductItem {
   }
 
   addToCart() {
-    console.log("adding to cart");
+    App.addProductToCart(this.product);
   }
   render(prod) {
     const prodEl = document.createElement("li");
@@ -88,14 +88,23 @@ class ProductList {
 class Shop {
   render() {
     const renderHook = document.getElementById("app");
-    const cart = new ShopingCart();
-    const cartEl = cart.render();
+    this.cart = new ShopingCart();
+    const cartEl = this.cart.render();
     const productList = new ProductList();
     const prodEl = productList.render();
     renderHook.append(prodEl);
     renderHook.append(cartEl);
   }
 }
+class App {
+  static init() {
+    const shop = new Shop();
+    shop.render();
+    this.cart = shop.cart;
+  }
 
-const shop = new Shop();
-shop.render();
+  static addProductToCart(product) {
+    this.cart.addProduct(product);
+  }
+}
+App.init();
