@@ -11,24 +11,54 @@ class Product {
     this.description = desc;
   }
 }
-class ShopingCart {
-  items = [];
-  addProduct(product) {
-    this.items.push(product);
-    this.totalOutput.innerHTML = `<h2>Total \$${2}</h2>`;
+class Component {
+  constructor(renderHookId) {
+    this.hookId = renderHookId;
   }
-
+  createElement(tag, cssClassName, attributes) {
+    const rootElement = document.createElement(tag);
+    if (cssClassName) {
+      rootElement.className = cssClassName;
+    }
+    if (attributes && attributes.length > 0) {
+      for (const attr of attributes) {
+        rootElement.setAttribute(attr.name, attr.value);
+      }
+    }
+    document.getElementById(this.hookId).append(rootElement);
+    return rootElement;
+  }
+}
+class ShopingCart extends Component {
+  items = [];
+  set cartItem(value) {
+    this.items = value;
+    this.totalOutput.innerHTML = `<h2>Total \$${this.totalSum}</h2>`;
+  }
+  get totalSum() {
+    return this.items.reduce((prevValue, currItem) => {
+      return prevValue + currItem.price;
+    }, 0);
+  }
+  addProduct(product) {
+    const updatedItems = [...this.items];
+    updatedItems.push(product);
+    this.cartItem = updatedItems;
+  }
+  constructor(renderHook) {
+    super(renderHook);
+  }
   render() {
-    const cartEl = document.createElement("section");
+    const cartEl = this.createElement("section", "cart");
     cartEl.innerHTML = `
     <h2>Total \$${0}</h2>
     <button>Order Now!</button>
     `;
-    cartEl.className = "cart";
     this.totalOutput = cartEl.querySelector("h2");
     return cartEl;
   }
 }
+
 class ProductItem {
   // product;
   constructor(product) {
@@ -88,12 +118,11 @@ class ProductList {
 class Shop {
   render() {
     const renderHook = document.getElementById("app");
-    this.cart = new ShopingCart();
-    const cartEl = this.cart.render();
+    this.cart = new ShopingCart("app");
+    this.cart.render();
     const productList = new ProductList();
     const prodEl = productList.render();
     renderHook.append(prodEl);
-    renderHook.append(cartEl);
   }
 }
 class App {
