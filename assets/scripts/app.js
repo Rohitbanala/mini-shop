@@ -56,14 +56,22 @@ class ShopingCart extends Component {
     this.cartItem = updatedItems;
   }
   constructor(renderHook) {
-    super(renderHook);
+    super(renderHook, false);
+    this.orderNow = () => {
+      console.log("order now");
+      console.log(this);
+    };
+    this.render();
   }
+
   render() {
     const cartEl = this.createElement("section", "cart");
     cartEl.innerHTML = `
     <h2>Total \$${0}</h2>
     <button>Order Now!</button>
     `;
+    const orderButton = cartEl.querySelector("button");
+    orderButton.addEventListener("click", this.orderNow);
     this.totalOutput = cartEl.querySelector("h2");
   }
 }
@@ -98,13 +106,14 @@ class ProductItem extends Component {
   }
 }
 class ProductList extends Component {
-  products = [];
+  #products = [];
   constructor(renderHookId) {
-    super(renderHookId);
+    super(renderHookId, false);
+    this.render();
     this.fetchProducts();
   }
   fetchProducts() {
-    this.products = [
+    this.#products = [
       new Product(
         "Pillow",
         "https://fastly.picsum.photos/id/20/3670/2462.jpg?hmac=CmQ0ln-k5ZqkdtLvVO23LjVAEabZQx2wOaT4pyeG10I",
@@ -121,7 +130,7 @@ class ProductList extends Component {
     this.renderProducts();
   }
   renderProducts() {
-    for (const prod of this.products) {
+    for (const prod of this.#products) {
       new ProductItem(prod, "prod-list");
     }
   }
@@ -129,7 +138,7 @@ class ProductList extends Component {
     this.createElement("ul", "product-list", [
       new ElementAttribute("id", "prod-list"),
     ]);
-    if (this.products && this.products.length > 0) {
+    if (this.#products && this.#products.length > 0) {
       this.renderProducts();
     }
   }
