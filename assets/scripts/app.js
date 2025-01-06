@@ -11,10 +11,20 @@ class Product {
     this.description = desc;
   }
 }
-class Component {
-  constructor(renderHookId) {
-    this.hookId = renderHookId;
+class ElementAttribute {
+  constructor(attrName, attrValue) {
+    this.name = attrName;
+    this.value = attrValue;
   }
+}
+class Component {
+  constructor(renderHookId, shouldRender = true) {
+    this.hookId = renderHookId;
+    if (shouldRender) {
+      this.render();
+    }
+  }
+  render() {}
   createElement(tag, cssClassName, attributes) {
     const rootElement = document.createElement(tag);
     if (cssClassName) {
@@ -55,80 +65,89 @@ class ShopingCart extends Component {
     <button>Order Now!</button>
     `;
     this.totalOutput = cartEl.querySelector("h2");
-    return cartEl;
   }
 }
 
-class ProductItem {
+class ProductItem extends Component {
   // product;
-  constructor(product) {
+  constructor(product, renderHook) {
+    super(renderHook, false);
     this.product = product;
+    this.render();
   }
 
   addToCart() {
     App.addProductToCart(this.product);
   }
-  render(prod) {
-    const prodEl = document.createElement("li");
-    prodEl.className = "product-item";
+  render() {
+    const prodEl = this.createElement("li", "product-item");
+
     prodEl.innerHTML = `
       <div>
-      <img src = "${prod.imageUrl}" alt = "${prod.title}">
+      <img src = "${this.product.imageUrl}" alt = "${this.product.title}">
       <div class = "product-item__content">
-      <h2>${prod.title}</h2>
-      <h3>\$${prod.price}</h3>
-      <p>${prod.description}</p>
+      <h2>${this.product.title}</h2>
+      <h3>\$${this.product.price}</h3>
+      <p>${this.product.description}</p>
       <button>Add to Cart</button>
       </div>
       </div>
       `;
     const addCartButton = prodEl.querySelector("button");
     addCartButton.addEventListener("click", this.addToCart.bind(this));
-    return prodEl;
   }
 }
-class ProductList {
-  products = [
-    new Product(
-      "Pillow",
-      "https://fastly.picsum.photos/id/20/3670/2462.jpg?hmac=CmQ0ln-k5ZqkdtLvVO23LjVAEabZQx2wOaT4pyeG10I",
-      299,
-      "A soft Pillow"
-    ),
-    new Product(
-      "A Carpet",
-      "https://fastly.picsum.photos/id/20/3670/2462.jpg?hmac=CmQ0ln-k5ZqkdtLvVO23LjVAEabZQx2wOaT4pyeG10I",
-      499,
-      "A Carpet which you might like or not."
-    ),
-  ];
-  constructor() {}
-  render() {
-    const prodList = document.createElement("ul");
-    prodList.className = "product-list";
+class ProductList extends Component {
+  products = [];
+  constructor(renderHookId) {
+    super(renderHookId);
+    this.fetchProducts();
+  }
+  fetchProducts() {
+    this.products = [
+      new Product(
+        "Pillow",
+        "https://fastly.picsum.photos/id/20/3670/2462.jpg?hmac=CmQ0ln-k5ZqkdtLvVO23LjVAEabZQx2wOaT4pyeG10I",
+        299,
+        "A soft Pillow"
+      ),
+      new Product(
+        "A Carpet",
+        "https://fastly.picsum.photos/id/20/3670/2462.jpg?hmac=CmQ0ln-k5ZqkdtLvVO23LjVAEabZQx2wOaT4pyeG10I",
+        499,
+        "A Carpet which you might like or not."
+      ),
+    ];
+    this.renderProducts();
+  }
+  renderProducts() {
     for (const prod of this.products) {
-      const productItem = new ProductItem(prod);
-      const prodEl = productItem.render(prod);
-      prodList.append(prodEl);
+      new ProductItem(prod, "prod-list");
     }
-    return prodList;
+  }
+  render() {
+    this.createElement("ul", "product-list", [
+      new ElementAttribute("id", "prod-list"),
+    ]);
+    if (this.products && this.products.length > 0) {
+      this.renderProducts();
+    }
   }
 }
 
 class Shop {
+  constructor() {
+    this.render();
+  }
   render() {
-    const renderHook = document.getElementById("app");
     this.cart = new ShopingCart("app");
-    this.cart.render();
-    const productList = new ProductList();
-    const prodEl = productList.render();
-    renderHook.append(prodEl);
+    new ProductList("app");
   }
 }
 class App {
   static init() {
     const shop = new Shop();
-    shop.render();
+
     this.cart = shop.cart;
   }
 
